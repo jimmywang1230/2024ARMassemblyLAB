@@ -2,11 +2,18 @@ import processing.serial.*;
 import gifAnimation.*;
 import ddf.minim.*;
 PImage[] animation;
-Gif loopingGif,gpig;
+Serial myPort;
+int aa=2, bb=1, cc;
+int val;
+float lastY; // Assuming the height of the screen is 675
+Gif loopingGif, gpig;
 Block b1;
 Block b2;
 Block b3;
 spikeBlock sb;
+MovingRightBlock mrBlock;
+MovingLeftBlock mlBlock;
+BounceBlock bBlock;
 initialBlock ib;
 player p;
 PVector moveVector;
@@ -14,296 +21,503 @@ float xSpeed = 0;
 ArrayList<Block> locs = new ArrayList<Block>();
 boolean gameover = false;
 boolean start = false;
-final float ySpeed = 2;
+final float ySpeed = 1.5;
 int count = 1;
 float hp = 50;
 
 void setup() {
   loopingGif = new Gif(this, "C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/player_run.gif");
   loopingGif.loop();
+  String portName ="COM8";
+  myPort = new Serial(this, portName, 115200);
+  lastY = 675;
   size(450, 675);
   smooth();
-  b1 = new Block(0,100,0,100);
-  b2 = new Block(100,200,100,200);
-  b3 = new Block(200,300,200,300);
+  b1 = new Block(0, 100, 0, 100);
+  b2 = new Block(100, 200, 100, 200);
+  b3 = new Block(200, 300, 200, 300);
   sb = new spikeBlock();
   ib = new initialBlock();
   p = new player();
-  moveVector = new PVector(xSpeed,1);
+  mrBlock = new MovingRightBlock();
+  mlBlock = new MovingLeftBlock();
+  bBlock = new BounceBlock();
+  moveVector = new PVector(xSpeed, 1);
   locs.add(b1);
   locs.add(b2);
+  locs.add(mrBlock);
+  locs.add(mlBlock);
+  locs.add(bBlock);
   locs.add(b3);
   locs.add(sb);
   locs.add(ib);
-
 }
 void draw() {
-    if(hp<50){
+  if (hp<50) {
     hp+=0.01;
   }
-  if(!start && !gameover){
+  if (!start && !gameover) {
     background(200);
     textSize(10);
-    fill(0,0,255);
-    text("Control:",0,20);
-    text("use left and right keys to control",10,35);
-    text("Lose:",0,50);
-    text("1)hit by the ceiling",10,65);
-    text("2)drop,which is get out of the screen",10,80);
-    text("3)hp=0,you lost your hp when you are ",10,95);
-    text("on the block with spikes",20,110);
+    fill(0, 0, 255);
+    text("Control:", 0, 20);
+    text("use left and right keys to control", 10, 35);
+    text("Lose:", 0, 50);
+    text("1)hit by the ceiling", 10, 65);
+    text("2)drop,which is get out of the screen", 10, 80);
+    text("3)hp=0,you lost your hp when you are ", 10, 95);
+    text("on the block with spikes", 20, 110);
     textSize(15);
-    text("if you are ready to die",width/2-100,height/2-50);
-    text("press space",width/2-100,height/2-30);
-   
-    
+    text("if you are ready to die", width/2-100, height/2-50);
+    text("press space", width/2-100, height/2-30);
   }
   if (start && !gameover) {
-      background(0);
-      fill(200);
-      float spikeWidth = 20; // Width of one spike triangle
-      float spikeHeight = 20; // Height of one spike triangle
+    background(0);
+    fill(200);
+    float spikeWidth = 20; // Width of one spike triangle
+    float spikeHeight = 20; // Height of one spike triangle
 
-      // Calculate the number of spikes needed to cover the width
-      int numSpikes = int(width / spikeWidth);
+    // Calculate the number of spikes needed to cover the width
+    int numSpikes = int(width / spikeWidth);
 
-      float i = 0;
-      for (int a = 0; a < numSpikes; a++) {
-          // Draw each spike across the width
-          triangle(i, 0, i + spikeWidth / 2, spikeHeight, i + spikeWidth, 0);
-          i += spikeWidth;
-      }
+    float i = 0;
+    for (int a = 0; a < numSpikes; a++) {
+      // Draw each spike across the width
+      triangle(i, 0, i + spikeWidth / 2, spikeHeight, i + spikeWidth, 0);
+      i += spikeWidth;
+    }
 
-      p.drawPlayer();
-      b1.makeBlock();
-      b2.makeBlock();
-      b3.makeBlock();
-      sb.makeBlock();
-      ib.makeBlock();
+    //p.update();
 
-      if (p.getLoc().y < 20 || p.getLoc().y > height || hp <= 0) {
-          gameover = true;
-          start = false;
-      }
+    p.drawPlayer();
+    b1.makeBlock();
+    b2.makeBlock();
+    mrBlock.makeBlock();
+    mlBlock.makeBlock();
+    bBlock.makeBlock();
+    b3.makeBlock();
+    sb.makeBlock();
+    ib.makeBlock();
+
+    if ( myPort.available() > 0) {  // If data is available,
+      val = myPort.read();         // read it and store it in val
+      aa = val & 3; // 獲取最低位
+      bb = (val >> 2) & 3; // 右移一位後獲取最低位
+      cc = (val >> 4) & 1; // 右移兩位後獲取最低位
+      //println(aa, bb, cc);
+    }
+    //image(loopingGif, 0, 0);
+    // y=110;
+
+    if (aa==0) {
+      moveVector.x = -5;
+    } else if (aa==1) {
+      moveVector.x = 5;
+    }
+
+
+    if (p.getLoc().y < 20 || p.getLoc().y > height || hp <= 0) {
+      gameover = true;
+      start = false;
+    }
   }
-  if(!start && gameover){
+  if (!start && gameover) {
     background(200);
-    text("gameover",width/2-100,height/2-100);
-    text("Your Score:" + count , width/2-100,height/2-70);
-    text("Press space to try again",width/2-100,height/2-40);
-    
+    text("gameover", width/2-100, height/2-100);
+    text("Your Score:" + count, width/2-100, height/2-70);
+    text("Press space to try again", width/2-100, height/2-40);
   }
-  
-    
-  
 }
 void keyPressed() {
 
   switch (keyCode) {
-    case LEFT:
-      moveVector.x = -10;
-      break;
-    case RIGHT:
-      moveVector.x = 10;
-      break;
-    case ' ':
-      p.reset();
-      ib.reset();
-      b1.reset();
-      b2.reset();
-      b3.reset();
-      sb.reset();
-      start = true;
-      gameover = false;
-      count = 1;
-      hp = 50;
-      break;
+  case LEFT:
+    moveVector.x = -10;
+    break;
+  case RIGHT:
+    moveVector.x = 10;
+    break;
+  case ' ':
+    p.reset();
+    ib.reset();
+    b1.reset();
+    b2.reset();
+    b3.reset();
+    sb.reset();
+    start = true;
+    gameover = false;
+    count = 1;
+    hp = 50;
+    break;
   }
-  
 }
 
-class player{
+class player {
   //i=loopingGif;
   float x = width/2 - 15;
   float y = height/2 - 50;
-  PVector loc = new PVector(x,y);
+  PVector loc = new PVector(x, y);
   boolean facingLeft = false;
-  public player(){
+  public player() {
   }
-  void  reset(){
+  void  reset() {
     loc.x = width/2 - 15;
     loc.y = height/2 - 50;
   }
+  
+  void bounce() {
+      moveVector.y = -20; // Adjust the bounce magnitude here
+  }
+
   public void drawPlayer() {
     if (facingLeft) {
-        pushMatrix();
-        translate(loc.x + loopingGif.width, loc.y); // Move matrix to image location
-        scale(-1, 1); // Flip horizontally
-        image(loopingGif, 0, 0);
-        popMatrix();
+      pushMatrix();
+      translate(loc.x + loopingGif.width, loc.y); // Move matrix to image location
+      scale(-1, 1); // Flip horizontally
+      image(loopingGif, 0, 0);
+      popMatrix();
     } else {
-        image(loopingGif, loc.x, loc.y);
+      image(loopingGif, loc.x, loc.y);
     }
 
-      for (Block b : locs) {
-        if (isCollision(b)) {
-            moveVector.y = -4;
-        }
+    for (Block b : locs) {
+      if (isCollision(b)) {
+        moveVector.y = -4;
       }
+    }
 
-      // Determine the direction of the player
-      if (moveVector.x < 0) {
-          facingLeft = true;
-      } else if (moveVector.x > 0) {
-          facingLeft = false;
-      }
+    // Determine the direction of the player
+    if (moveVector.x < 0) {
+      facingLeft = true;
+    } else if (moveVector.x > 0) {
+      facingLeft = false;
+    }
 
-      // Update the player's location
-      loc.add(moveVector);
+    // Update the player's location
+    loc.add(moveVector);
 
-      // Apply the correct image based on the direction
-      if (facingLeft) {
-          pushMatrix();
-          translate(loc.x + loopingGif.width, loc.y);  // Move matrix to image location
-          scale(-1, 1);  // Flip horizontally
-          image(loopingGif, 0, 0);
-          popMatrix();
-      } else {
-          image(loopingGif, loc.x, loc.y);
-      }
+    // Apply the correct image based on the direction
+    if (facingLeft) {
+      pushMatrix();
+      translate(loc.x + loopingGif.width, loc.y);  // Move matrix to image location
+      scale(-1, 1);  // Flip horizontally
+      image(loopingGif, 0, 0);
+      popMatrix();
+    } else {
+      image(loopingGif, loc.x, loc.y);
+    }
 
-      // Reset the movement vector
-      moveVector.y = 2;
-      moveVector.x = 0;  // It's crucial to reset this here to prevent repeated drawing issues
-    
+    // Reset the movement vector
+    moveVector.y = 2;
+    moveVector.x = 0;  // It's crucial to reset this here to prevent repeated drawing issues
   }
-  public PVector getLoc(){
+  public PVector getLoc() {
     return loc;
   }
   public boolean isCollision(Block other) {
-      float bx = other.getX();
-      float by = other.getY();
-      float playerBottomEdgeY = getLoc().y + loopingGif.height;
-      //if((playerBottomEdgeY-by <= 12 && playerBottomEdgeY-by >=0) && abs(getLoc().x+12-(bx+25)) <= 26){
-      if ((playerBottomEdgeY - by <= 12 && playerBottomEdgeY - by >= 0) && abs(getLoc().x - bx) <= loopingGif.width / 2 + other.getWidth() / 2) {
-        return true;
-      
+    float bx = other.getX();
+    float by = other.getY();
+    float playerBottomEdgeY = getLoc().y + loopingGif.height;
+    //if((playerBottomEdgeY-by <= 12 && playerBottomEdgeY-by >=0) && abs(getLoc().x+12-(bx+25)) <= 26){
+    if ((playerBottomEdgeY - by <= 12 && playerBottomEdgeY - by >= 0) && abs(getLoc().x - bx) <= loopingGif.width / 2 + other.getWidth() / 2) {
+      return true;
+    }
+    return false;
   }
-  return false;
+  void update() {
+    // Check for collisions with all blocks
+    boolean onMovingRightBlock = false;
+    for (Block b : locs) {
+      if (b instanceof MovingRightBlock && p.isCollision(b)) {
+        onMovingRightBlock = true;
+        break;
+      }
+    }
+
+    if (!onMovingRightBlock) {
+      moveVector.x = 0; // Stop moving right if not on the block
+    }
+
+    // Update player location based on moveVector
+    loc.add(moveVector);
   }
 }
 
-class Block{
-  color clr = color(0, 0, 255);
+class Block {
+  PImage blockImage;
+  //color clr = color(0, 0, 255);
   float l, r, u, d;
   float x, y;
   float w = 50 * 1.5;  // Scaled width
   float h = 10 * 1.5;  // Scaled height
-  public Block(){
+
+  public Block() {
   }
-  public Block(float a,float b,float c,float d){
+  public Block(float a, float b, float c, float d) {
     this.l = a * 1.5;
     this.r = b * 1.5 - w;  // Adjust to stay within width boundaries
     this.u = c * 1.5;
     this.d = d * 1.5 - h;  // Adjust to stay within height boundaries
     x = random(a, b);
-    y = height - 20 + random(c, d); 
+    //y = height - 20 + random(c, d);
+    y = max(height - random(u, d), lastY - 150);
+    lastY = y;
   }
-  void reset(){
+  void reset() {
     x = random(l, r);
-    y = height + random(u, d) - 20;  // Make sure reset logic matches
+    //y = height + random(u, d) - 20;  // Make sure reset logic matches
+    y = max(height + random(u, d), lastY - 150);
+    lastY = y;
   }
-  float getX(){
+  float getX() {
     return x;
   }
-  float getY(){
+  float getY() {
     return y;
   }
   float getWidth() {
     return w;
   }
-   
-  void makeBlock(){    
-    if(this.y < 0){
-      x += random(-30,30);
-      y = height + random(50);
+
+  void makeBlock() {
+    if (this.y < 0) {
+      x += random(-30, 30);
+      y = max(height + random(u, d), lastY - 150);
+      lastY = y;
     }
-    fill(clr);
-    rect(x, y, w, h);
+    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Normal.png");// Load the block image
+    image(blockImage, x, y);
+    lastY = y;
     y -= ySpeed;
     count++;
   }
-  
 }
-class spikeBlock extends Block{
-  color clr = color(0,0,255);
+class spikeBlock extends Block {
+  PImage blockImage; // Image for the moving block
   float l = 0;
   float r = 250;
   float u = 0;
   float d = 100;
-  float x = random(l,r);
-  float y = height + random(u,d);
+  float x = random(l, r);
+  float y = height + random(u, d);
   float w = 50*1.5;
   float h = 10*1.5;
-  public spikeBlock(){
+
+  public spikeBlock() {
   }
-  void reset(){
-    x = random(l,r);
-    y = height + random(u,d);   
+  public spikeBlock(float a, float b, float c, float d) {
+    this.l = a * 1.5;
+    this.r = b * 1.5 - w;  // Adjust to stay within width boundaries
+    this.u = c * 1.5;
+    this.d = d * 1.5 - h;  // Adjust to stay within height boundaries
+    x = random(a, b);
+    //y = height - 20 + random(c, d);
+    y = max(height - random(u, d), lastY - 200);
+    lastY = y;
   }
-  float getX(){
+  void reset() {
+    x = random(l, r);
+    //y = height + random(u, d);
+    y = max(height + random(u, d), lastY - 200);
+    lastY = y;
+  }
+  float getX() {
     return x;
   }
-  float getY(){
+  float getY() {
     return y;
   }
-   
-  void makeBlock(){    
-    if(this.y < 0){
-      x += random(-30,30);
+
+  void makeBlock() {
+    if (this.y < 0) {
+      x += random(-30, 30);
       y = height + random(300);
     }
-    fill(200);
-    triangle(x, y, x + 5 * 1.5, y - 10 * 1.5, x + 10 * 1.5, y);
-    triangle(x + 10 * 1.5, y, x + 15 * 1.5, y - 10 * 1.5, x + 20 * 1.5, y);
-    triangle(x + 20 * 1.5, y, x + 25 * 1.5, y - 10 * 1.5, x + 30 * 1.5, y);
-    triangle(x + 30 * 1.5, y, x + 35 * 1.5, y - 10 * 1.5, x + 40 * 1.5, y);
-    triangle(x + 40 * 1.5, y, x + 45 * 1.5, y - 10 * 1.5, x + 50 * 1.5, y);
-    fill(clr);
-    rect(x,y,w,h);  
+    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Nails.png");// Load the block image
+    image(blockImage, x, y);
     y -= ySpeed;
     count++;
-    fill(255,0,0);
-    if(p.isCollision(this)&&hp > 0){
+    fill(255, 0, 0);
+    if (p.isCollision(this)&&hp > 0) {
       hp -= 0.3;
     }
-    rect(0,20,hp,20);
+    rect(0, 20, hp, 20);
   }
-  
 }
-class initialBlock extends Block{
-  color clr = color(0,0,255);
+class MovingRightBlock extends Block {
+  PImage blockImage; // Image for the moving block
+  float w = 50*1.5; // Set width from image dimensions
+  float h = 10*1.5; // Set height from image dimensions
+  float l = 0;
+  float r = 250;
+  float u = 0;
+  float d = 100;
+  float x = random(l, r);
+  float y = height + random(u, d);
+
+  public MovingRightBlock() {
+    super();
+  }
+  void reset() {
+    x = random(l, r);
+    y = height + random(u, d);
+  }
+  float getX() {
+    return x;
+  }
+  float getY() {
+    return y;
+  }
+
+  void makeBlock() {
+    if (this.y < 0) {
+      x += random(-30, 30);
+      y = height + random(300);
+    }
+    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/ConveyorRight.png");// Load the block image
+    image(blockImage, x, y);
+    y -= ySpeed;
+    count++;
+    if (p.isCollision(this)&&hp > 0) {
+      moveVector.x = 10;
+    }
+  }
+
+  void interact(player p) {
+    if (p.isCollision(this)) {
+      moveVector.x = 10; // Or whatever the logic needs to be
+    }
+  }
+}
+
+class MovingLeftBlock extends Block {
+  PImage blockImage; // Image for the moving block
+  float w = 50*1.5; // Set width from image dimensions
+  float h = 10*1.5; // Set height from image dimensions
+  float l = 0;
+  float r = 250;
+  float u = 0;
+  float d = 100;
+  float x = random(l, r);
+  float y = height + random(u, d);
+
+  public MovingLeftBlock() {
+    super();
+  }
+  void reset() {
+    x = random(l, r);
+    y = height + random(u, d);
+  }
+  float getX() {
+    return x;
+  }
+  float getY() {
+    return y;
+  }
+
+  void makeBlock() {
+    if (this.y < 0) {
+      x += random(-30, 30);
+      y = height + random(300);
+    }
+    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/ConveyorLeft.png");// Load the block image
+    image(blockImage, x, y);
+    y -= ySpeed;
+    count++;
+    if (p.isCollision(this)&&hp > 0) {
+      print("isCollision");
+      moveVector.x = -10;
+    }
+  }
+
+  void interact(player p) {
+    if (p.isCollision(this)) {
+      moveVector.x = -10; // Or whatever the logic needs to be
+    }
+  }
+}
+
+//class BounceBlock extends Block {
+//  PImage blockImage;
+//  //color clr = color(0, 0, 255);
+//  float l, r, u, d;
+//  float x, y;
+//  float w = 50 * 1.5;  // Scaled width
+//  float h = 10 * 1.5;  // Scaled height
+
+//  public BounceBlock() {
+//  }
+//  public BounceBlock(float a, float b, float c, float d) {
+//    this.l = a * 1.5;
+//    this.r = b * 1.5 - w;  // Adjust to stay within width boundaries
+//    this.u = c * 1.5;
+//    this.d = d * 1.5 - h;  // Adjust to stay within height boundaries
+//    x = random(a, b);
+//    //y = height - 20 + random(c, d);
+//    y = max(height - random(u, d), lastY - 150);
+//    lastY = y;
+//  }
+//  void reset() {
+//    x = random(l, r);
+//    y = max(height + random(u, d), lastY - 150);
+//    lastY = y;
+//  }
+//  float getX() {
+//    return x;
+//  }
+//  float getY() {
+//    return y;
+//  }
+
+//  void makeBlock() {
+//    if (this.y < 0) {
+//      x += random(-30, 30);
+//      y = max(height + random(u, d), lastY - 150);
+//      lastY = y;
+//    }
+//    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Trampoline.png");// Load the block image
+//    image(blockImage, x, y);
+//    lastY = y;
+//    y -= ySpeed;
+//    count++;
+//    if (p.isCollision(this)&&hp > 0) {
+//      moveVector.y = 200;
+//    }
+//  }
+
+//  void interact(player p) {
+//    print("interact");
+//    if (p.isCollision(this)) {
+//      print("isCollision");
+//      moveVector.x = 200;
+//    }
+//  }
+//}
+
+
+
+class initialBlock extends Block {
+  PImage blockImage;
+  color clr = color(0, 0, 255);
   float x = (width / 2 - 25) *1.5;
   float y = (height /2 + 50) *1.5;
   float w = 50*1.5;
   float h = 10*1.5;
-  public initialBlock(){
+  public initialBlock() {
   }
-  void reset(){
+  void reset() {
     x = (width / 2 - 25) *1.5;
     y = (height /2 + 50) *1.5;
   }
-  float getX(){
+  float getX() {
     return x;
   }
-  float getY(){
+  float getY() {
     return y;
   }
-  void makeBlock(){
-    fill(clr);
-    rect(x,y,w,h);  
+  void makeBlock() {
+    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Normal.png");// Load the block image
+    image(blockImage, x, y);
     y -= ySpeed;
-    
-    
   }
 }
