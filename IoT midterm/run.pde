@@ -196,6 +196,12 @@ class player {
     // Update the player's location
     loc.add(moveVector);
 
+    // Ensure player does not move outside the screen width
+    loc.x = constrain(loc.x, 0, width - loopingGif.width); // Ensure the player's position is within the screen bounds
+  
+    // Reset movement after applying to prevent sliding
+    moveVector.y = 2;
+    moveVector.x = 0;
     // Apply the correct image based on the direction
     if (facingLeft) {
       pushMatrix();
@@ -472,7 +478,6 @@ class BounceBlock extends Block {
     y -= ySpeed;
     count++;
     if (p.isCollision(this)&&hp > 0) {
-      print("isCollision");
       p.bounce();
     }
   }
