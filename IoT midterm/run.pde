@@ -166,7 +166,7 @@ class player {
   }
   
   void bounce() {
-      moveVector.y = -20; // Adjust the bounce magnitude here
+      loc.y -= 100; // Adjust the bounce magnitude here
   }
 
   public void drawPlayer() {
@@ -437,63 +437,54 @@ class MovingLeftBlock extends Block {
   }
 }
 
-//class BounceBlock extends Block {
-//  PImage blockImage;
-//  //color clr = color(0, 0, 255);
-//  float l, r, u, d;
-//  float x, y;
-//  float w = 50 * 1.5;  // Scaled width
-//  float h = 10 * 1.5;  // Scaled height
+class BounceBlock extends Block {
+  PImage blockImage; // Image for the moving block
+  float w = 50*1.5; // Set width from image dimensions
+  float h = 10*1.5; // Set height from image dimensions
+  float l = 0;
+  float r = 250;
+  float u = 0;
+  float d = 100;
+  float x = random(l, r);
+  float y = height + random(u, d);
 
-//  public BounceBlock() {
-//  }
-//  public BounceBlock(float a, float b, float c, float d) {
-//    this.l = a * 1.5;
-//    this.r = b * 1.5 - w;  // Adjust to stay within width boundaries
-//    this.u = c * 1.5;
-//    this.d = d * 1.5 - h;  // Adjust to stay within height boundaries
-//    x = random(a, b);
-//    //y = height - 20 + random(c, d);
-//    y = max(height - random(u, d), lastY - 150);
-//    lastY = y;
-//  }
-//  void reset() {
-//    x = random(l, r);
-//    y = max(height + random(u, d), lastY - 150);
-//    lastY = y;
-//  }
-//  float getX() {
-//    return x;
-//  }
-//  float getY() {
-//    return y;
-//  }
+  public BounceBlock() {
+    super();
+  }
+  void reset() {
+    x = random(l, r);
+    y = height + random(u, d);
+  }
+  float getX() {
+    return x;
+  }
+  float getY() {
+    return y;
+  }
 
-//  void makeBlock() {
-//    if (this.y < 0) {
-//      x += random(-30, 30);
-//      y = max(height + random(u, d), lastY - 150);
-//      lastY = y;
-//    }
-//    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Trampoline.png");// Load the block image
-//    image(blockImage, x, y);
-//    lastY = y;
-//    y -= ySpeed;
-//    count++;
-//    if (p.isCollision(this)&&hp > 0) {
-//      moveVector.y = 200;
-//    }
-//  }
+  void makeBlock() {
+    if (this.y < 0) {
+      x += random(-30, 30);
+      y = height + random(300);
+    }
+    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Trampoline.png");// Load the block image
+    image(blockImage, x, y);
+    y -= ySpeed;
+    count++;
+    if (p.isCollision(this)&&hp > 0) {
+      print("isCollision");
+      p.bounce();
+    }
+  }
 
-//  void interact(player p) {
-//    print("interact");
-//    if (p.isCollision(this)) {
-//      print("isCollision");
-//      moveVector.x = 200;
-//    }
-//  }
-//}
-
+  void interact(player p) {
+    print("interact");
+    if (p.isCollision(this)) {
+      print("isCollision");
+      moveVector.y = -100; // Or whatever the logic needs to be
+    }
+  }
+}
 
 
 class initialBlock extends Block {
