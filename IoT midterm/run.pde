@@ -1,7 +1,10 @@
 import processing.serial.*;
 import gifAnimation.*;
 import ddf.minim.*;
+Minim minim;
+AudioPlayer deathSound, hurtSound, touchSound;
 PImage[] animation;
+PImage leftWall, rightWall, gameStart, gameOver;
 Serial myPort;
 int aa=2, bb=1, cc;
 int val;
@@ -26,9 +29,21 @@ int count = 1;
 float hp = 50;
 
 void setup() {
-  loopingGif = new Gif(this, "C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/player_run.gif");
+  loopingGif = new Gif(this, "C:/Users/tim/Desktop/IoT Mid/NSSHAFT/player_run.gif");
   loopingGif.loop();
-  String portName ="COM8";
+  minim = new Minim(this);
+  deathSound = minim.loadFile("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Audios/death.mp3");
+  hurtSound = minim.loadFile("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Audios/hurt.mp3");
+  touchSound = minim.loadFile("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Audios/touch_normal.mp3");
+  leftWall = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Wall.png"); // Load the wall image
+  leftWall.resize(0, height); // Resize to fit the height of the window
+  rightWall = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Wall.png"); // Load the wall image
+  rightWall.resize(0, height); // Resize to fit the height of the window
+  gameStart = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/gamestart.png"); // Load the wall image
+  gameStart.resize(0, height); // Resize to fit the height of the window
+  gameOver = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/gameover Mid.png"); // Load the wall image
+  gameOver.resize(0, height); // Resize to fit the height of the window
+  String portName ="COM3";
   myPort = new Serial(this, portName, 115200);
   lastY = 675;
   size(450, 675);
@@ -53,26 +68,20 @@ void setup() {
   locs.add(ib);
 }
 void draw() {
+  background(0);
+
+ 
   if (hp<50) {
     hp+=0.01;
   }
   if (!start && !gameover) {
-    background(200);
-    textSize(10);
-    fill(0, 0, 255);
-    text("Control:", 0, 20);
-    text("use left and right keys to control", 10, 35);
-    text("Lose:", 0, 50);
-    text("1)hit by the ceiling", 10, 65);
-    text("2)drop,which is get out of the screen", 10, 80);
-    text("3)hp=0,you lost your hp when you are ", 10, 95);
-    text("on the block with spikes", 20, 110);
-    textSize(15);
-    text("if you are ready to die", width/2-100, height/2-50);
-    text("press space", width/2-100, height/2-30);
+    //background(200);
+    image(gameStart, 0, 0);
   }
   if (start && !gameover) {
     background(0);
+    image(leftWall, 0, 0);  // Position at the left boundary
+    image(rightWall, width - rightWall.width, 0);  // Position at the right boundary
     fill(200);
     float spikeWidth = 20; // Width of one spike triangle
     float spikeHeight = 20; // Height of one spike triangle
@@ -122,10 +131,13 @@ void draw() {
     }
   }
   if (!start && gameover) {
-    background(200);
-    text("gameover", width/2-100, height/2-100);
-    text("Your Score:" + count, width/2-100, height/2-70);
-    text("Press space to try again", width/2-100, height/2-40);
+    if (!deathSound.isPlaying()) {
+      deathSound.play();
+    }
+    background(0);
+    image(gameOver, 0, 0);
+    textSize(30);
+    text("Your Score:" + count, width/2-100, height/2+250);
   }
 }
 void keyPressed() {
@@ -164,9 +176,10 @@ class player {
     loc.x = width/2 - 15;
     loc.y = height/2 - 50;
   }
-  
+ 
   void bounce() {
       loc.y -= 100; // Adjust the bounce magnitude here
+      touchSound.play();
   }
 
   public void drawPlayer() {
@@ -183,6 +196,7 @@ class player {
     for (Block b : locs) {
       if (isCollision(b)) {
         moveVector.y = -4;
+        touchSound.play();
       }
     }
 
@@ -198,7 +212,7 @@ class player {
 
     // Ensure player does not move outside the screen width
     loc.x = constrain(loc.x, 0, width - loopingGif.width); // Ensure the player's position is within the screen bounds
-  
+ 
     // Reset movement after applying to prevent sliding
     moveVector.y = 2;
     moveVector.x = 0;
@@ -291,7 +305,7 @@ class Block {
       y = max(height + random(u, d), lastY - 150);
       lastY = y;
     }
-    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Normal.png");// Load the block image
+    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/Normal.png");// Load the block image
     image(blockImage, x, y);
     lastY = y;
     y -= ySpeed;
@@ -339,12 +353,13 @@ class spikeBlock extends Block {
       x += random(-30, 30);
       y = height + random(300);
     }
-    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Nails.png");// Load the block image
+    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/Nails.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
     count++;
     fill(255, 0, 0);
     if (p.isCollision(this)&&hp > 0) {
+      hurtSound.play();
       hp -= 0.3;
     }
     rect(0, 20, hp, 20);
@@ -380,7 +395,7 @@ class MovingRightBlock extends Block {
       x += random(-30, 30);
       y = height + random(300);
     }
-    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/ConveyorRight.png");// Load the block image
+    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/ConveyorRight.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
     count++;
@@ -391,6 +406,7 @@ class MovingRightBlock extends Block {
 
   void interact(player p) {
     if (p.isCollision(this)) {
+      touchSound.play();
       moveVector.x = 10; // Or whatever the logic needs to be
     }
   }
@@ -426,18 +442,18 @@ class MovingLeftBlock extends Block {
       x += random(-30, 30);
       y = height + random(300);
     }
-    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/ConveyorLeft.png");// Load the block image
+    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/ConveyorLeft.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
     count++;
     if (p.isCollision(this)&&hp > 0) {
-      print("isCollision");
       moveVector.x = -10;
     }
   }
 
   void interact(player p) {
     if (p.isCollision(this)) {
+      touchSound.play();
       moveVector.x = -10; // Or whatever the logic needs to be
     }
   }
@@ -473,7 +489,7 @@ class BounceBlock extends Block {
       x += random(-30, 30);
       y = height + random(300);
     }
-    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Trampoline.png");// Load the block image
+    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/Trampoline.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
     count++;
@@ -512,7 +528,7 @@ class initialBlock extends Block {
     return y;
   }
   void makeBlock() {
-    blockImage = loadImage("C:/Users/Administrator/Downloads/Angrybird_recourse/NSSHAFT/floor/Normal.png");// Load the block image
+    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/Normal.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
   }
