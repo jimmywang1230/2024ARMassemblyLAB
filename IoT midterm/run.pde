@@ -6,7 +6,7 @@ AudioPlayer deathSound, hurtSound, touchSound;
 PImage[] animation;
 PImage leftWall, rightWall, gameStart, gameOver;
 Serial myPort;
-int aa=2, bb=1, cc;
+int aa=2, bb=3, cc;
 int val;
 float lastY; // Assuming the height of the screen is 675
 Gif loopingGif, gpig;
@@ -24,26 +24,26 @@ float xSpeed = 0;
 ArrayList<Block> locs = new ArrayList<Block>();
 boolean gameover = false;
 boolean start = false;
-final float ySpeed = 1.5;
+float ySpeed = 1.5;
 int count = 1;
 float hp = 50;
 
 void setup() {
-  loopingGif = new Gif(this, "C:/Users/tim/Desktop/IoT Mid/NSSHAFT/player_run.gif");
+  loopingGif = new Gif(this, "C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/player_run.gif");
   loopingGif.loop();
   minim = new Minim(this);
-  deathSound = minim.loadFile("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Audios/death.mp3");
-  hurtSound = minim.loadFile("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Audios/hurt.mp3");
-  touchSound = minim.loadFile("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Audios/touch_normal.mp3");
-  leftWall = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Wall.png"); // Load the wall image
+  deathSound = minim.loadFile("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/Audios/death.mp3");
+  hurtSound = minim.loadFile("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/Audios/hurt.mp3");
+  touchSound = minim.loadFile("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/Audios/touch_normal.mp3");
+  leftWall = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/Wall.png"); // Load the wall image
   leftWall.resize(0, height); // Resize to fit the height of the window
-  rightWall = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/Wall.png"); // Load the wall image
+  rightWall = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/Wall.png"); // Load the wall image
   rightWall.resize(0, height); // Resize to fit the height of the window
-  gameStart = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/gamestart.png"); // Load the wall image
+  gameStart = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/gamestart.png"); // Load the wall image
   gameStart.resize(0, height); // Resize to fit the height of the window
-  gameOver = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/gameover Mid.png"); // Load the wall image
+  gameOver = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/gameover Mid.png"); // Load the wall image
   gameOver.resize(0, height); // Resize to fit the height of the window
-  String portName ="COM3";
+  String portName ="COM8";
   myPort = new Serial(this, portName, 115200);
   lastY = 675;
   size(450, 675);
@@ -95,6 +95,9 @@ void draw() {
       triangle(i, 0, i + spikeWidth / 2, spikeHeight, i + spikeWidth, 0);
       i += spikeWidth;
     }
+    
+
+    
 
     //p.update();
 
@@ -117,12 +120,22 @@ void draw() {
     }
     //image(loopingGif, 0, 0);
     // y=110;
-
+    print(bb);
     if (aa==0) {
       moveVector.x = -5;
     } else if (aa==1) {
       moveVector.x = 5;
     }
+    
+        // Update falling speed and GIF animation speed based on bb value
+    if (bb == 1) {
+       ySpeed = 3; // Increase falling speed
+      //loopingGif.speed(1.5);     // Set GIF speed to 1.5x
+    }else{
+      ySpeed = 1.5;
+    }
+    
+    
 
 
     if (p.getLoc().y < 20 || p.getLoc().y > height || hp <= 0) {
@@ -305,7 +318,7 @@ class Block {
       y = max(height + random(u, d), lastY - 150);
       lastY = y;
     }
-    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/Normal.png");// Load the block image
+    blockImage = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/floor/Normal.png");// Load the block image
     image(blockImage, x, y);
     lastY = y;
     y -= ySpeed;
@@ -353,7 +366,7 @@ class spikeBlock extends Block {
       x += random(-30, 30);
       y = height + random(300);
     }
-    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/Nails.png");// Load the block image
+    blockImage = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/floor/Nails.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
     count++;
@@ -395,7 +408,7 @@ class MovingRightBlock extends Block {
       x += random(-30, 30);
       y = height + random(300);
     }
-    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/ConveyorRight.png");// Load the block image
+    blockImage = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/floor/ConveyorRight.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
     count++;
@@ -442,7 +455,7 @@ class MovingLeftBlock extends Block {
       x += random(-30, 30);
       y = height + random(300);
     }
-    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/ConveyorLeft.png");// Load the block image
+    blockImage = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/floor/ConveyorLeft.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
     count++;
@@ -489,7 +502,7 @@ class BounceBlock extends Block {
       x += random(-30, 30);
       y = height + random(300);
     }
-    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/Trampoline.png");// Load the block image
+    blockImage = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/floor/Trampoline.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
     count++;
@@ -528,7 +541,7 @@ class initialBlock extends Block {
     return y;
   }
   void makeBlock() {
-    blockImage = loadImage("C:/Users/tim/Desktop/IoT Mid/NSSHAFT/floor/Normal.png");// Load the block image
+    blockImage = loadImage("C:/Users/Administrator/Desktop/台科/課程/112-2 IoT/IoT Mid/統神下完樓梯開電燈_M11207509_王佑強/NSSHAFT/floor/Normal.png");// Load the block image
     image(blockImage, x, y);
     y -= ySpeed;
   }
