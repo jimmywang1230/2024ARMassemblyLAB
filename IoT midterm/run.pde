@@ -120,7 +120,6 @@ void draw() {
     }
     //image(loopingGif, 0, 0);
     // y=110;
-    print(bb);
     if (aa==0) {
       moveVector.x = -5;
     } else if (aa==1) {
@@ -514,7 +513,7 @@ class BounceBlock extends Block {
   void interact(player p) {
     print("interact");
     if (p.isCollision(this)) {
-      print("isCollision");
+      //print("isCollision");
       moveVector.y = -100; // Or whatever the logic needs to be
     }
   }
