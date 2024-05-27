@@ -1,9 +1,9 @@
-
+#!/bin/bash
 
 # 變數
 score=0
 mine_count=10  # 設定地雷數量
-inpuut_count=0
+input_count=0
 declare -a board   # 宣告一個陣列來存放遊戲板
 declare -a revealed # 宣告一個陣列來標記已揭露的單元格
 declare -a mines # 宣告一個陣列來存放地雷的位置
@@ -40,11 +40,11 @@ initialize_mines() {
   done
 }
 
-# 打印地雷場
+# 印出地雷場
 plough() {
   printf "\e[2J\e[H"    # 清除螢幕並把游標移動到top
   printf '%s' "     a   b   c   d   e   f   g   h   i   j"
-  printf '\n   %s\n' "══════════════════════════════════════════"
+  printf '\n   %s\n' "═════════════════════════════════════════"
   for row in $(seq 0 9); do
     printf '%d  ' "$row" 
     for col in $(seq 0 9); do
@@ -56,7 +56,7 @@ plough() {
       fi
     done
     printf '%s\n' "║"
-    printf '   %s\n' "══════════════════════════════════════════"
+    printf '   %s\n' "═════════════════════════════════════════"
   done
   printf '\n\n'
 }
@@ -110,7 +110,7 @@ reveal_cell() {
   if [[ "${board[$index]}" == "💣" ]]; then  # 如果開到地雷，遊戲結束
     show_all_mines  # 顯示所有地雷
     plough  # 重新印地雷場
-    printf "\n\n\t%s\n\n" "GAME OVER: 😂你踩到地雷了笑死!😂 總共花 $inpuut_count 次打開了: $score 個cells"
+    printf "\n\n\t%s\n\n" "GAME OVER: 😂你踩到地雷了笑死!😂 總共花 $input_count 次打開了: $score 個cells"
     exit 0  # 結束遊戲
   else
     adj_mines=$(count_nearby_mines $index)  # 計算相鄰地雷數量
@@ -140,11 +140,11 @@ get_coordinates() {
     j ) o=9;;
   esac
   i=$(((ro * 10) + o))  # 計算單元格索引
-  inpuut_count=$((inpuut_count + 1))
+  input_count=$((input_count + 1))
   reveal_cell $i
   plough
   if [[ $score -eq $((100 - mine_count)) ]]; then   # 如果所有非地雷cell都被打開，玩家勝利
-    printf "\n\t%s\n\n" "恭喜你贏了!!! \t 總共花 $inpuut_count 次打開了: $score 個cells"
+    printf "\n\t%s\n\n" "恭喜你贏了!!! \t 總共花 $input_count 次打開了: $score 個cells"
     
     exit 0
   fi
