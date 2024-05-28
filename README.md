@@ -23,8 +23,9 @@ Bash 是 Linux 和 Unix 系統上的一種常用命令行解釋器，使用 Bash
     ex: col=a, row=0 則輸入a0
     - 閱讀完遊戲規則點擊Enter 開始遊戲
 - 系統流程圖:
-    ![alt text](image-1.png)
-    ![alt text](image.png)
+  
+    ![alt text](https://github.com/jimmywang1230/2024ARMassemblyLAB/blob/main/Final/Flow1.png)
+    ![alt text](https://github.com/jimmywang1230/2024ARMassemblyLAB/blob/main/Final/Flow2.png)
     
 - 程式碼解說:
     - 主程序
