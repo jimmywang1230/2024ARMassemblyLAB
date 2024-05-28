@@ -1,8 +1,8 @@
-# 112-2 Final of Embedded Microprocessor Systems
+# 112-2 Design of Embedded Microprocessor Systems
 
 M11207509 王佑強
 
-### 題目: 掃雷先生 (MineSweeper)
+### 題目: 掃雷先生 (踩地雷)
 
 ### 簡介
 
@@ -23,10 +23,8 @@ Bash 是 Linux 和 Unix 系統上的一種常用命令行解釋器，使用 Bash
     ex: col=a, row=0 則輸入a0
     - 閱讀完遊戲規則點擊Enter 開始遊戲
 - 系統流程圖:
-    
-    ![Untitled](112-2%20Design%20of%20Embedded%20Microprocessor%20Systems%20190c8295ea13439689aeb0e827d9321f/Untitled.png)
-    
-    ![Untitled](112-2%20Design%20of%20Embedded%20Microprocessor%20Systems%20190c8295ea13439689aeb0e827d9321f/Untitled%201.png)
+    ![alt text](image-1.png)
+    ![alt text](image.png)
     
 - 程式碼解說:
     - 主程序
